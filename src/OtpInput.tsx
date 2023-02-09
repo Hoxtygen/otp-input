@@ -33,19 +33,27 @@ export default function OtpInput({ value, valueLength, onChange }: Props) {
       return;
     }
     targetValue = isTargetValueDigit ? targetValue : ' ';
-    const newValue =
-      value.substring(0, index) + targetValue + value.substring(index + 1);
-    onChange(newValue);
+    const targetValueLength = targetValue.length;
 
-    if (!isTargetValueDigit) {
-      return;
-    }
+    if (targetValueLength === 1) {
+      const newValue =
+        value.substring(0, index) + targetValue + value.substring(index + 1);
+      onChange(newValue);
 
-    const nextElementSibling =
-      target.nextElementSibling as HTMLInputElement | null;
+      if (!isTargetValueDigit) {
+        return;
+      }
 
-    if (nextElementSibling) {
-      nextElementSibling.focus();
+      const nextElementSibling =
+        target.nextElementSibling as HTMLInputElement | null;
+
+      if (nextElementSibling) {
+        nextElementSibling.focus();
+      }
+    } else if (targetValueLength === valueLength) {
+      onChange(targetValue);
+
+      target.blur();
     }
   };
 
@@ -89,10 +97,12 @@ export default function OtpInput({ value, valueLength, onChange }: Props) {
           className="otp-input"
           value={digit}
           onChange={(event) => inputChange(event, index)}
-          onKeyDown = {inputOnKeyDown}
+          onKeyDown={inputOnKeyDown}
           onFocus={inputOnFocus}
         />
       ))}
     </div>
   );
 }
+
+266543
