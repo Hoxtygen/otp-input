@@ -22,6 +22,23 @@ export default function OtpInput({ value, valueLength, onChange }: Props) {
     return items;
   }, [value, valueLength]);
 
+  const focusToNextInput = (target: HTMLElement) => {
+    const nextElementSibling =
+      target.nextElementSibling as HTMLInputElement | null;
+
+    if (nextElementSibling) {
+      nextElementSibling.focus();
+    }
+  };
+  const focusToPrevInput = (target: HTMLElement) => {
+    const previousElementSibling =
+      target.previousElementSibling as HTMLInputElement | null;
+
+    if (previousElementSibling) {
+      previousElementSibling.focus();
+    }
+  };
+
   const inputChange = (
     event: React.ChangeEvent<HTMLInputElement>,
     index: number
@@ -32,6 +49,18 @@ export default function OtpInput({ value, valueLength, onChange }: Props) {
     if (!isTargetValueDigit && targetValue !== '') {
       return;
     }
+
+    const nextInputElement =
+      target.nextElementSibling as HTMLInputElement | null;
+    // only delete if next input has no value
+    if (
+      !isTargetValueDigit &&
+      nextInputElement &&
+      nextInputElement.value !== ''
+    ) {
+      return;
+    }
+
     targetValue = isTargetValueDigit ? targetValue : ' ';
     const targetValueLength = targetValue.length;
 
@@ -44,12 +73,7 @@ export default function OtpInput({ value, valueLength, onChange }: Props) {
         return;
       }
 
-      const nextElementSibling =
-        target.nextElementSibling as HTMLInputElement | null;
-
-      if (nextElementSibling) {
-        nextElementSibling.focus();
-      }
+      focusToNextInput(target);
     } else if (targetValueLength === valueLength) {
       onChange(targetValue);
 
@@ -58,8 +82,17 @@ export default function OtpInput({ value, valueLength, onChange }: Props) {
   };
 
   const inputOnKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    const { key } = e;
     const target = e.target as HTMLInputElement;
 
+    if (key === 'ArrowRight' || key === 'ArrowDown') {
+      e.preventDefault();
+      return focusToNextInput(target);
+    }
+    if (key === 'ArrowLeft' || key === 'ArrowUp') {
+      e.preventDefault();
+      return focusToPrevInput(target);
+    }
     const targetValue = target.value;
 
     // keep the selection range position
@@ -70,16 +103,20 @@ export default function OtpInput({ value, valueLength, onChange }: Props) {
       return;
     }
 
-    const previousElementSibling =
-      target.previousElementSibling as HTMLInputElement | null;
-
-    if (previousElementSibling) {
-      previousElementSibling.focus();
-    }
+    focusToPrevInput(target);
   };
 
   const inputOnFocus = (e: React.FocusEvent<HTMLInputElement>) => {
     const { target } = e;
+
+    // keep focusing back until previous input
+    // element has value
+    const prevInputEl =
+      target.previousElementSibling as HTMLInputElement | null;
+
+    if (prevInputEl && prevInputEl.value === '') {
+      return prevInputEl.focus();
+    }
 
     target.setSelectionRange(0, target.value.length);
   };
@@ -105,4 +142,4 @@ export default function OtpInput({ value, valueLength, onChange }: Props) {
   );
 }
 
-266543
+266543;
